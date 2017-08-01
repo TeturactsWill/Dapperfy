@@ -1,9 +1,10 @@
-﻿using Dapperfy.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace DapperApiTest
+using Dapperfy.Attributes;
+
+namespace Dapperfy
 {
     public static class Dapperfy
     {
@@ -15,17 +16,15 @@ namespace DapperApiTest
             return GenerateFindByIdSelectQuery(id, tableName, pkName);
         }
 
-
         /// <summary>
         /// Generates a SELECT query that selects all records with a table name of obj with an "s" at the end.
         /// For example, if you have a Person class, this method assumes the table name is Persons.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="obj"></param>
         /// <returns></returns>
-        public static string GetAll<T>(T obj) where T : Type
+        public static string GetAll<T>() where T : class
         {
-            return GenerateStarSelectQuery($"{obj.Name}s");
+            return GenerateStarSelectQuery($"{typeof(T).GetType()}s");
         }
 
         /// <summary>
@@ -165,7 +164,7 @@ namespace DapperApiTest
         private static KeyValuePair<string, dynamic> FindPrimaryKeyAttributeName<T>(T obj) where T : class
         {
             KeyValuePair<string, dynamic> pk;
-            foreach (var prop in obj.GetType().GetProperties())
+            foreach (var prop in obj.GetType().GetTypeInfo().DeclaredProperties)
             {
                 if (prop.GetCustomAttribute(typeof(PrimaryKeyAttribute), false) != null)
                 {
@@ -220,7 +219,7 @@ namespace DapperApiTest
             var currentValue = "";
             propList = new List<string>();
             valList = new List<string>();
-            foreach (var prop in obj.GetType().GetProperties())
+            foreach (var prop in obj.GetType().GetTypeInfo().DeclaredProperties)
             {
                 if (prop.Name == pk.Key) continue;
                 propList.Add(prop.Name);
